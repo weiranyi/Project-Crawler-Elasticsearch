@@ -8,7 +8,7 @@
 - 2、需求分析与算法设计：
     - 需求：网页中的一个节点开始遍历所有节点
     - 算法：使用了广度优先算法的变体
-        ![img.png](images/img.png)
+        ![img.png](images/flowChart.png)
 
 ***
 
