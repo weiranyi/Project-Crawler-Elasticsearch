@@ -50,12 +50,16 @@
       ```shell
         git reset HEAD~1
       ```
+    - 撤销PR的提交 
+      ```shell
+      git log --获得61b22195162ec24fbbf2ef020485bb0a524c82b9
+      git revert 61b22195162ec24fbbf2ef020485bb0a524c82b9
+      ```
+    - 若在自己分支出现与master冲突时，可以通过force push
+     ```shell
+      git push -f
+     ```
+- commit提交文本，首行做标题行，第二行开始写内容，每行最好不要超过72个字符
 
-- 撤销PR的提交 
-  ```shell
-  git log --获得61b22195162ec24fbbf2ef020485bb0a524c82b9
-  git revert 61b22195162ec24fbbf2ef020485bb0a524c82b9
-  ```
-- 
 
 
