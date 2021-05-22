@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 

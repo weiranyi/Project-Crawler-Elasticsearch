@@ -100,3 +100,4 @@
         - maven-surefire-plugin官方检测插件      
     - 插件可以绑定到maven的各个生命周期上
     - maven-compile-plugein
+- ORM对象关系映射
