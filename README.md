@@ -87,3 +87,16 @@
         - a.便于人脑理解
         - b.越短越容易复用
         - c.对于Java来说可以方便的对方法进行覆盖
+- spotbugs
+    - spotbugs goal：分析项目
+    - check goal：分析项目，发现BUG就让build失败
+    ```shell
+        mvn spotbugs:check
+        mvn spotbugs:gui
+    ```
+- maven默认生命周期：
+    - maven在各生命周期什么都不做
+    - 做什么需要依靠插件
+        - maven-surefire-plugin官方检测插件      
+    - 插件可以绑定到maven的各个生命周期上
+    - maven-compile-plugein
