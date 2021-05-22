@@ -1,5 +1,6 @@
 package com.github.weiranyi;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -11,48 +12,108 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        // 【待处理】存放待处理的链接的池子
-        List<String> linkPool = new ArrayList<>();
-        // 【已处理】存放已经处理的链接
-        Set<String> processedLinks = new HashSet<>();
-        // 添加一个链接到池中
-        linkPool.add("https://sina.cn");
-        while (true) {
-            // 链接池是空的就退出循环
-            if (linkPool.isEmpty()) {
-                break;
-            }
-            // 获取并移除最后一个链接，对于ArrayList来说更有效率
-            String link = linkPool.remove(linkPool.size() - 1);
+    private static final String USER_NAME = "root";
+    private static final String USER_PASSWORD = "123456";
 
+    @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
+    public static void main(String[] args) throws IOException, SQLException {
+        Connection connection = DriverManager.getConnection("jdbc:h2:file:/Users/yiweiran/Documents/workPlace/java/JavaProject-Crawler-Elasticsearch/news", USER_NAME, USER_PASSWORD);
+        String link = null;
+        // 从数据库中加载下一个链接，若能加载到则进行下一个循环
+        while ((link = getNextLinkThenDelete(connection)) != null) {
             // 若链接已经处理过了就跳到下一次循环
-            if (processedLinks.contains(link)) {
+            if (isLinkProcessed(connection, link)) {
                 continue;
             }
             // 判断是否是感兴趣滴内容【新浪站内的网页】
             if (isInterestingLink(link)) {
                 Document doc = httpGetAndParseHtml(link);
-                // 使用CSS选择器,html中去获取
-                ArrayList<Element> links = doc.select("a");
-                // 用Java8引入的特性对代码进行简化，过程式语言变成描述式语言
-                links.stream().map(aTag -> aTag.attr("href")).forEach(linkPool::add);
-                // 假设这是一个新闻的详情页，就存入数据库，否则，就什么都不做
+                // 分析页面url将它们放到即将处理的url池子中去
+                parseUrlsFromAndStoreIntoDatabase(connection, doc);
                 storeIntoDatabaseIfItIsNewsPage(doc);
-                processedLinks.add(link);
-
+                updataDatabase(connection, link, "insert into LINKS_ALREADY_PROCESSED(link) values (?)");
             } else {
                 // 不感兴趣
                 continue;
             }
         }
+
     }
+
+    private static void parseUrlsFromAndStoreIntoDatabase(Connection connection, Document doc) throws SQLException {
+        for (Element aTag : doc.select("a")) {
+            String href = aTag.attr("href");
+            updataDatabase(connection, href, "insert into LINKS_TO_BE_PROCESSED(link) values (?)");
+        }
+    }
+
+
+    /*
+     * 4、优化主干逻辑，进一步重构
+     */
+    private static String getNextLinkThenDelete(Connection connection) throws SQLException {
+        String link = getNextLink(connection, "select link from LINKS_TO_BE_PROCESSED limit 1;");
+        if (link != null) {
+            updataDatabase(connection, link, "delete FROM LINKS_TO_BE_PROCESSED where LINK=?");
+        }
+        return link;
+    }
+
+    /*
+     * 3、重构对数据库操作部分的代码
+     */
+    private static String getNextLink(Connection connection, String sql) throws SQLException {
+        ResultSet resultSet = null;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                return resultSet.getString(1);
+            }
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return null;
+    }
+
+    private static void updataDatabase(Connection connection, String link, String sql) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, link);
+            statement.executeUpdate();
+        }
+    }
+
+    private static boolean isLinkProcessed(Connection connection, String link) throws SQLException {
+        ResultSet resultSet = null;
+        try (PreparedStatement statement = connection.prepareStatement("select link from LINKS_ALREADY_PROCESSED where LINK=?;")) {
+            statement.setString(1, link);
+            // 从数据库加载即将处理的代码
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                return true;
+            }
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return false;
+    }
+//    private static List<String> deleteFromDatabase(Connection connection, String sql) throws SQLException {
+//        List<String> results = new ArrayList<>();
+//        try (PreparedStatement statement = connection.prepareStatement("delete FROM LINKS_TO_BE_PROCESSED where LINK=?")) {
+//            statement.setString(1,link);
+//            // 从数据库加载即将处理的代码
+//            statement.executeUpdate();
+//        }
+//        return results;
+//    }
 
 
     /*
