@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
-import java.util.List;
-
 
 public class Main {
     private static final String USER_NAME = "root";
@@ -24,20 +22,10 @@ public class Main {
 
     @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
     public static void main(String[] args) throws IOException, SQLException {
-        // 创建一个数据库链接
         Connection connection = DriverManager.getConnection("jdbc:h2:file:/Users/yiweiran/Documents/workPlace/java/JavaProject-Crawler-Elasticsearch/news", USER_NAME, USER_PASSWORD);
-
-        while (true) {
-            // 【待处理】存放待处理的链接的池子
-            List<String> linkPool = loadUrlsFromDatabase(connection, "select link from LINKS_TO_BE_PROCESSED;");
-            // 链接池是空的就退出循环
-            if (linkPool.isEmpty()) {
-                break;
-            }
-            // 获取并移除最后一个链接，对于ArrayList来说更有效率
-            String link = linkPool.remove(linkPool.size() - 1);
-            insertIntoDatabase(connection, link, "delete FROM LINKS_TO_BE_PROCESSED where LINK=?");
-
+        String link = null;
+        // 从数据库中加载下一个链接，若能加载到则进行下一个循环
+        while ((link = getNextLinkThenDelete(connection)) != null) {
             // 若链接已经处理过了就跳到下一次循环
             if (isLinkProcessed(connection, link)) {
                 continue;
@@ -48,7 +36,7 @@ public class Main {
                 // 分析页面url将它们放到即将处理的url池子中去
                 parseUrlsFromAndStoreIntoDatabase(connection, doc);
                 storeIntoDatabaseIfItIsNewsPage(doc);
-                insertIntoDatabase(connection, link, "insert into LINKS_ALREADY_PROCESSED(link) values (?)");
+                updataDatabase(connection, link, "insert into LINKS_ALREADY_PROCESSED(link) values (?)");
             } else {
                 // 不感兴趣
                 continue;
@@ -60,33 +48,41 @@ public class Main {
     private static void parseUrlsFromAndStoreIntoDatabase(Connection connection, Document doc) throws SQLException {
         for (Element aTag : doc.select("a")) {
             String href = aTag.attr("href");
-            insertIntoDatabase(connection, href, "insert into LINKS_TO_BE_PROCESSED(link) values (?)");
+            updataDatabase(connection, href, "insert into LINKS_TO_BE_PROCESSED(link) values (?)");
         }
     }
 
 
     /*
-     * 3、重构对数据库操作部分的代码
-     *
+     * 4、优化主干逻辑，进一步重构
      */
-    private static List<String> loadUrlsFromDatabase(Connection connection, String sql) throws SQLException {
-        List<String> results = new ArrayList<>();
+    private static String getNextLinkThenDelete(Connection connection) throws SQLException {
+        String link = getNextLink(connection, "select link from LINKS_TO_BE_PROCESSED limit 1;");
+        if (link != null) {
+            updataDatabase(connection, link, "delete FROM LINKS_TO_BE_PROCESSED where LINK=?");
+        }
+        return link;
+    }
+
+    /*
+     * 3、重构对数据库操作部分的代码
+     */
+    private static String getNextLink(Connection connection, String sql) throws SQLException {
         ResultSet resultSet = null;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            // 从数据库加载即将处理的代码
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                results.add(resultSet.getString(1));
+                return resultSet.getString(1);
             }
         } finally {
             if (resultSet != null) {
                 resultSet.close();
             }
         }
-        return results;
+        return null;
     }
 
-    private static void insertIntoDatabase(Connection connection, String link, String sql) throws SQLException {
+    private static void updataDatabase(Connection connection, String link, String sql) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, link);
             statement.executeUpdate();
