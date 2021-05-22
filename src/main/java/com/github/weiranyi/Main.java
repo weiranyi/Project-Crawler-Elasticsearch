@@ -14,11 +14,13 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 
 public class Main {
     private static final String USER_NAME = "root";
     private static final String USER_PASSWORD = "123456";
+
 
     @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
     public static void main(String[] args) throws IOException, SQLException {
@@ -35,7 +37,7 @@ public class Main {
                 Document doc = httpGetAndParseHtml(link);
                 // 分析页面url将它们放到即将处理的url池子中去
                 parseUrlsFromAndStoreIntoDatabase(connection, doc);
-                storeIntoDatabaseIfItIsNewsPage(doc);
+                storeIntoDatabaseIfItIsNewsPage(connection, doc, link);
                 updataDatabase(connection, link, "insert into LINKS_ALREADY_PROCESSED(link) values (?)");
             } else {
                 // 不感兴趣
@@ -44,14 +46,6 @@ public class Main {
         }
 
     }
-
-    private static void parseUrlsFromAndStoreIntoDatabase(Connection connection, Document doc) throws SQLException {
-        for (Element aTag : doc.select("a")) {
-            String href = aTag.attr("href");
-            updataDatabase(connection, href, "insert into LINKS_TO_BE_PROCESSED(link) values (?)");
-        }
-    }
-
 
     /*
      * 4、优化主干逻辑，进一步重构
@@ -63,6 +57,20 @@ public class Main {
         }
         return link;
     }
+
+    private static void parseUrlsFromAndStoreIntoDatabase(Connection connection, Document doc) throws SQLException {
+        for (Element aTag : doc.select("a")) {
+            String href = aTag.attr("href");
+            if (href.startsWith("//")) {
+                href = "https:" + href;
+            }
+            if (href.toLowerCase().startsWith("javascript")) {
+                continue;
+            }
+            updataDatabase(connection, href, "insert into LINKS_TO_BE_PROCESSED(link) values (?)");
+        }
+    }
+
 
     /*
      * 3、重构对数据库操作部分的代码
@@ -105,15 +113,6 @@ public class Main {
         }
         return false;
     }
-//    private static List<String> deleteFromDatabase(Connection connection, String sql) throws SQLException {
-//        List<String> results = new ArrayList<>();
-//        try (PreparedStatement statement = connection.prepareStatement("delete FROM LINKS_TO_BE_PROCESSED where LINK=?")) {
-//            statement.setString(1,link);
-//            // 从数据库加载即将处理的代码
-//            statement.executeUpdate();
-//        }
-//        return results;
-//    }
 
 
     /*
@@ -126,9 +125,6 @@ public class Main {
     // 通过http请求拿到HTML文档
     private static Document httpGetAndParseHtml(String link) throws IOException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            if (link.startsWith("//")) {
-                link = "https:" + link;
-            }
             HttpGet httpGet = new HttpGet(link);
             httpGet.addHeader("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36");
             try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
@@ -142,12 +138,20 @@ public class Main {
     }
 
     // 若是新闻页面就存到数据库中
-    private static void storeIntoDatabaseIfItIsNewsPage(Document doc) {
+    private static void storeIntoDatabaseIfItIsNewsPage(Connection connection, Document doc, String link) throws SQLException {
         ArrayList<Element> articleTags = doc.select("article");
         if (!articleTags.isEmpty()) {
             for (Element articleTag : articleTags) {
-                String titile = articleTags.get(0).child(0).text();
-                System.out.println(titile);
+                String title = articleTags.get(0).child(0).text();
+                // Collectors.joining("\n")得到的字符串用换行符分隔
+                String content = articleTag.select("p").stream().map(Element::text).collect(Collectors.joining("\n"));
+                System.out.println(title);
+                try (PreparedStatement statement = connection.prepareStatement("insert into news(url,title,content,created_at,MODIFIED_AT)VALUES ( ?,?,?,now(),now() )")) {
+                    statement.setString(1, link);
+                    statement.setString(2, title);
+                    statement.setString(3, content);
+                    statement.executeUpdate();
+                }
             }
         }
     }
