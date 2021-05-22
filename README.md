@@ -46,27 +46,33 @@
     - 单线程 -> 多线程
     - console -> H2 -> MySQL
     - database -> Elasticsearch
+    
 - 好的代码习惯：
-    - 不要写妥协的代码
+    - 不要写妥协的代码，将烂代码、啰嗦的代码重构掉，初学可能会学习大量烂代码
     - 有好的三方实现可以借用，如：Apache提供的包
+    - 代码要有一个较好的扩展性
 
 ### 2、收获
 
 - 冒烟测试；测试原则：每个测试是一个类，负责一个小的功能模块
 - git命令回顾：
+    - 新建分支的命令：
+        ```shell
+        git checkout -b basic-algorithm
+        ```
     - 撤销 git add 操作，可以使用以下命令：
-      ```shell
+        ```shell
         git restore --staged src/main/java/com/github/weiranyi/Main.java
-      ```
+        ```
     - 若此时全部commit提交，想要撤销一个提交怎么办
-      ```shell
+        ```shell
         git reset HEAD~1
-      ```
+        ```
     - 撤销PR的提交
-      ```shell
-      git log --获得61b22195162ec24fbbf2ef020485bb0a524c82b9
-      git revert 61b22195162ec24fbbf2ef020485bb0a524c82b9
-      ```
+        ```shell
+        git log --获得61b22195162ec24fbbf2ef020485bb0a524c82b9
+        git revert 61b22195162ec24fbbf2ef020485bb0a524c82b9
+        ```
     - 若在自己分支出现与master冲突时，可以通过force push
         ```shell
         git push -f
@@ -76,5 +82,4 @@
 - 算法
     - DFS 深度优先算法
     - BFS 广度优先
-
 
