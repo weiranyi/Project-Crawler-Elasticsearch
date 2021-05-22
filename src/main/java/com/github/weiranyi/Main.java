@@ -41,6 +41,7 @@ public class Main {
                 Document doc = httpGetAndParseHtml(link);
                 // 使用CSS选择器,html中去获取
                 ArrayList<Element> links = doc.select("a");
+                // 用Java8引入的特性对代码进行简化，过程式语言变成描述式语言
                 links.stream().map(aTag -> aTag.attr("href")).forEach(linkPool::add);
                 // 假设这是一个新闻的详情页，就存入数据库，否则，就什么都不做
                 storeIntoDatabaseIfItIsNewsPage(doc);
