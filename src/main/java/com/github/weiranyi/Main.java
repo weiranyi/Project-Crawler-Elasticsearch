@@ -11,17 +11,34 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
         // 【待处理】存放待处理的链接的池子
         List<String> linkPool = new ArrayList<>();
+        // 创建一个数据库链接
+        Connection connection = connection = DriverManager.getConnection("jdbc:h2:file:/Users/yiweiran/Documents/workPlace/java/JavaProject-Crawler-Elasticsearch/news", "root", "123456");
+        try (PreparedStatement statement = connection.prepareStatement("select link from LINKS_TO_BE_PROCESSED;")) {
+            // 从数据库加载即将处理的代码
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                linkPool.add(resultSet.getString(1));
+            }
+        }
         // 【已处理】存放已经处理的链接
         Set<String> processedLinks = new HashSet<>();
+        try (PreparedStatement statement = connection.prepareStatement("select link from LINKS_ALREADY_PROCESSED;")) {
+            // 从数据库加载即将处理的代码
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                linkPool.add(resultSet.getString(1));
+            }
+        }
         // 添加一个链接到池中
         linkPool.add("https://sina.cn");
         while (true) {
