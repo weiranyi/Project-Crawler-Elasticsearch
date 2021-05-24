@@ -14,4 +14,4 @@ create table NEWS
     url         varchar(3000),
     created_at  timestamp default now(),
     modified_at timestamp default now()
-)
+)DEFAULT CHARSET=utf8mb4;
