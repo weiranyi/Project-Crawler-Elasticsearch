@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--MyBatis中SQL语句获取参数：
+    - 传入参数是对象时，通过get方法（JavaBean约定）获取值
+    - 传入参数是map时，通过参数就是key(jdbc:mysql://localhost:3306/news?characterEncoding=utf-8)
+    - pom中也要设置：jdbc:mysql://localhost:3306/news?characterEncoding=utf-8
+ -->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.weiranyi.MyMapper">
+    <select id="selectNextAvailableLink" resultType="String">
+        select link
+        from LINKS_TO_BE_PROCESSED LIMIT 1
+    </select>
+    <delete id="deleteLink" parameterType="String">
+        DELETE
+        FROM LINKS_TO_BE_PROCESSED
+        where link = #{id}
+    </delete>
+    <insert id="insertNews" parameterType="com.github.weiranyi.entity.News">
+        insert into news (url, title, content, created_at, MODIFIED_AT)
+        values (#{url}, #{title}, #{content}, now(), now())
+    </insert>
+    <select id="countLink" parameterType="String" resultType="int">
+        select count(link)
+        from LINKS_ALREADY_PROCESSED
+        WHERE LINK = #{link}
+    </select>
+
+    <select id="insertLink" parameterType="HashMap">
+        insert into
+        <choose>
+            <!-- 判断是否相等，表名需要用单引号，若不是单引号就会被识别为变量名 -->
+            <when test="tableName == 'link_already_processed'">
+                LINKS_ALREADY_PROCESSED
+            </when>
+            <otherwise>
+                LINKS_TO_BE_PROCESSED
+            </otherwise>
+        </choose>
+        (link)
+        values (#{link})
+    </select>
+</mapper>
