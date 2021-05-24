@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 官方文档：https://mybatis.org/mybatis-3/zh/getting-started.html -->
+<!--关于中文编码问题
+    - 数据库的编码必须使用utf-8，ALTER DATABASE news CHARACTER SET utf8mb4 COLLATE = utf8mb4_unicode_ci;
+    - 在JDBC链接滴地方也要设置中文编码
+ -->
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 默认情况下mybatis不会自己把数据库下划线列名映射为Java的驼峰名 -->
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="org.h2.Driver"/>
+                <property name="url"
+                          value="jdbc:h2:file:/Users/yiweiran/Documents/workPlace/java/JavaProject-Crawler-Elasticsearch/news"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="db/mybatis/MyMapper.xml"/>
+    </mappers>
+</configuration>
