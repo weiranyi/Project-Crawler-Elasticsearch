@@ -1,4 +1,4 @@
-package com.github.weiranyi;
+package com.github.weiranyi.entity;
 
 /**
  * @author: https://github.com/weiranyi
