@@ -26,9 +26,9 @@ public class MyBatisCrawlerDao implements CrawlerDao {
         sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
     }
 
-    // 获取下一个链接再删除
+    // 【synchronized转原子操作】获取下一个链接再删除
     @Override
-    public String getNextLinkThenDelete() throws SQLException {
+    public synchronized String getNextLinkThenDelete() throws SQLException {
         //  SqlSession openSession(boolean autoCommit);这里设计事务，必须提交才生效，要设置参数为true
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
             String url = session.selectOne("com.github.weiranyi.MyMapper.selectNextAvailableLink");
@@ -47,7 +47,6 @@ public class MyBatisCrawlerDao implements CrawlerDao {
         }
     }
 
-    //
     @Override
     public boolean isLinkProcessed(String link) throws SQLException {
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
