@@ -1,5 +1,7 @@
 package com.github.weiranyi.entity;
 
+import java.time.Instant;
+
 /**
  * @author: https://github.com/weiranyi
  * @description 这是一个新闻类
@@ -12,6 +14,9 @@ public class News {
     private String url;
     private String content;
     private String title;
+    // Instant：时刻、时间；可以去替代时间点
+    private Instant createdAt;
+    private Instant modifiedAt;
 
     public News() {
 
@@ -22,6 +27,16 @@ public class News {
         this.content = content;
         this.title = title;
     }
+
+    public News(News old) {
+        this.id = old.id;
+        this.url = old.url;
+        this.content = old.content;
+        this.title = old.title;
+        this.createdAt = old.createdAt;
+        this.modifiedAt = old.modifiedAt;
+    }
+
 
     public Integer getId() {
         return id;
@@ -53,5 +68,21 @@ public class News {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Instant modifiedAt) {
+        this.modifiedAt = modifiedAt;
     }
 }

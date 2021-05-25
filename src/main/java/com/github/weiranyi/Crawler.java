@@ -16,34 +16,40 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 
-public class Crawler {
-    CrawlerDao dao = new MyBatisCrawlerDao();
+public class Crawler extends Thread {
+    private CrawlerDao dao;
 
-    public void run() throws SQLException, IOException {
-        String link = null;
-        // 从数据库中加载下一个链接，若能加载到则进行下一个循环
-        while ((link = dao.getNextLinkThenDelete()) != null) {
-            // 若链接已经处理过了就跳到下一次循环
-            if (dao.isLinkProcessed(link)) {
-                continue;
-            }
-            // 判断是否是感兴趣滴内容【新浪站内的网页】
-            if (isInterestingLink(link)) {
-                Document doc = httpGetAndParseHtml(link);
-                // 分析页面url将它们放到即将处理的url池子中去
-                parseUrlsFromAndStoreIntoDatabase(doc);
-                storeIntoDatabaseIfItIsNewsPage(doc, link);
-                dao.insertProcessedLinked(link);
-                // dao.updataDatabase(link, "insert into LINKS_ALREADY_PROCESSED(link) values (?)");
-            } else {
-                // 不感兴趣
-                continue;
-            }
-        }
+    public Crawler(CrawlerDao dao) {
+        // 这样每个线程共享同一个链接
+        this.dao = dao;
     }
 
-    public static void main(String[] args) throws IOException, SQLException {
-        new Crawler().run();
+    @Override
+    public void run() {
+        try {
+            String link;
+            // 从数据库中加载下一个链接，若能加载到则进行下一个循环
+            while ((link = dao.getNextLinkThenDelete()) != null) {
+                // 若链接已经处理过了就跳到下一次循环
+                if (dao.isLinkProcessed(link)) {
+                    continue;
+                }
+                // 判断是否是感兴趣滴内容【新浪站内的网页】
+                if (isInterestingLink(link)) {
+                    Document doc = httpGetAndParseHtml(link);
+                    // 分析页面url将它们放到即将处理的url池子中去
+                    parseUrlsFromAndStoreIntoDatabase(doc);
+                    storeIntoDatabaseIfItIsNewsPage(doc, link);
+                    dao.insertProcessedLinked(link);
+                    // dao.updataDatabase(link, "insert into LINKS_ALREADY_PROCESSED(link) values (?)");
+                } else {
+                    // 不感兴趣
+                    continue;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void parseUrlsFromAndStoreIntoDatabase(Document doc) throws SQLException {

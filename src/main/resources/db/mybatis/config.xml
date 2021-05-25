@@ -8,7 +8,11 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <!-- 默认情况下mybatis不会自己把数据库下划线列名映射为Java的驼峰名 -->
+    <!--
+        1、该段代码主要是两种命名约定之间的转换
+        2、settings在配置表中有自己的顺序，必须放在其他配置的前面
+        3、默认情况下mybatis不会自己把数据库下划线列名映射为Java的驼峰名
+    -->
     <settings>
         <setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
@@ -26,5 +30,6 @@
     </environments>
     <mappers>
         <mapper resource="db/mybatis/MyMapper.xml"/>
+        <mapper resource="db/mybatis/MockMapper.xml"/>
     </mappers>
 </configuration>
