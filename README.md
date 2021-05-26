@@ -36,13 +36,13 @@ mvn spotbugs:gui
 
 # 5、展示：
 - 搜索展示：
-![搜索展示](https://raw.githubusercontent.com/weiranyi/Crawler-Elasticsearch/new-feature/images/search_code.png)
+![搜索展示](https://github.com/weiranyi/Project-Crawler-Elasticsearch/blob/main/images/search_code.png?raw=true)
 
 - 爬取的数据：
-![数据展示](https://github.com/weiranyi/Crawler-Elasticsearch/blob/new-feature/images/news_database.png?raw=true)
+![数据展示](https://github.com/weiranyi/Project-Crawler-Elasticsearch/blob/main/images/news_database.png?raw=true)
 
 - Docker展示：
-![Docker](https://github.com/weiranyi/Crawler-Elasticsearch/blob/new-feature/images/Docker.png?raw=true)
+![Docker](https://github.com/weiranyi/Project-Crawler-Elasticsearch/blob/main/images/Docker.png?raw=true)
   
 - Elasticsearch
-![Elasticsearch](https://github.com/weiranyi/Crawler-Elasticsearch/blob/new-feature/images/Elasticsearch.png?raw=true)
+![Elasticsearch](https://github.com/weiranyi/Project-Crawler-Elasticsearch/blob/main/images/Elasticsearch.png?raw=true)
