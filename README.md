@@ -1,4 +1,9 @@
 # 项目：多线程爬虫与Elasticsearch搜索引擎实战
+## 需求分析与算法设计：
+- 需求：网页中的一个节点开始遍历所有节点
+- 算法：使用了广度优先算法的变体
+
+![img.png](https://github.com/weiranyi/JavaProject-Crawler-Elasticsearch/blob/yiweiran/images/flowChart.png?raw=true)
 ## 1、迭代内容：
 - 版本1： 
   - 用Java编写一个多线程爬虫，完成HTTP请求、HTML解析等工作，得到数据后放入H2数据库中，借助Flyway将建表、添加原始数据的工作等（自动化）
