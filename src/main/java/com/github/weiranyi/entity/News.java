@@ -22,10 +22,10 @@ public class News {
 
     }
 
-    public News(String url, String content, String title) {
+    public News(String url, String title, String content) {
         this.url = url;
-        this.content = content;
         this.title = title;
+        this.content = content;
     }
 
     public News(News old) {
