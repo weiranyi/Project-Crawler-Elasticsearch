@@ -183,15 +183,15 @@
                     <user>root</user>
                     <password>123456</password>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>flyway-migrate</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>migrate</goal>
-                        </goals>
-                    </execution>
-                </executions>
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>flyway-migrate</id>-->
+<!--                        <phase>process-resources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>migrate</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
             </plugin>
         </plugins>
     </build>
